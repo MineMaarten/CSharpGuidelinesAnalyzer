@@ -15,7 +15,7 @@ namespace CSharpGuidelinesAnalyzer.Rules.Maintainability
         private const string MessageFormat = "Parameter '{0}' is of type '{1}'.";
         private const string Description = "Avoid signatures that take a bool parameter.";
 
-        public const string DiagnosticId = "AV1564";
+        public const string DiagnosticId = "AV1564P";
 
         [NotNull]
         private static readonly AnalyzerCategory Category = AnalyzerCategory.Maintainability;
@@ -42,11 +42,6 @@ namespace CSharpGuidelinesAnalyzer.Rules.Maintainability
         {
             var parameter = (IParameterSymbol)context.Symbol;
 
-            if (parameter.ContainingSymbol.IsDeconstructor() || parameter.IsSynthesized())
-            {
-                return;
-            }
-
             if (IsParameterAccessible(parameter) && parameter.Type.IsBooleanOrNullableBoolean())
             {
                 AnalyzeBooleanParameter(parameter, context);
@@ -57,15 +52,12 @@ namespace CSharpGuidelinesAnalyzer.Rules.Maintainability
         {
             ISymbol containingMember = parameter.ContainingSymbol;
 
-            return containingMember.DeclaredAccessibility != Accessibility.Private && containingMember.IsSymbolAccessibleFromRoot();
+            return containingMember.DeclaredAccessibility == Accessibility.Public && containingMember.IsSymbolAccessibleFromRoot();
         }
 
         private static void AnalyzeBooleanParameter([NotNull] IParameterSymbol parameter, SymbolAnalysisContext context)
         {
-            ISymbol containingMember = parameter.ContainingSymbol;
-
-            if (!containingMember.IsOverride && !containingMember.HidesBaseMember(context.CancellationToken) && !parameter.IsInterfaceImplementation() &&
-                !IsDisposablePattern(parameter))
+            if (!IsDisposablePattern(parameter))
             {
                 context.ReportDiagnostic(Diagnostic.Create(Rule, parameter.Locations[0], parameter.Name, parameter.Type));
             }

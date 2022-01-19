@@ -270,7 +270,7 @@ namespace CSharpGuidelinesAnalyzer.Extensions
 
             while (container != null)
             {
-                if (container.DeclaredAccessibility == Accessibility.Private)
+                if (container.DeclaredAccessibility != Accessibility.Public)
                 {
                     return false;
                 }
